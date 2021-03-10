@@ -1,8 +1,11 @@
 name: remote ssh command
-on: [push]
+on: 
+  push:
+    branches: [staging]
 jobs:
   build:
-    name: Build
+    name: Deploy to Backend
+    if: github.repository_owner	== 'benawad'
     runs-on: ubuntu-latest
     steps:
       - name: executing remote ssh commands using password

@@ -40,7 +40,7 @@ export interface AvatarProps {
 export const SingleUser: React.FC<AvatarProps> = ({
   src,
   size = "default",
-  className,
+  className = "",
   isOnline = false,
 }) => {
   return (
@@ -51,19 +51,11 @@ export const SingleUser: React.FC<AvatarProps> = ({
         height: avatarSizeMap[size],
       }}
     >
-      <img
-        alt="avatar"
-        className="rounded-full"
-        src={src}
-        style={{
-          height: "100%",
-          width: "100%",
-        }}
-      />
+      <img alt="avatar" className="rounded-full w-full h-full" src={src} />
       {isOnline && (
         <span
           className={
-            "rounded-full absolute box-content bg-accent border-gray-800"
+            "rounded-full absolute box-content bg-accent border-primary-800"
           }
           style={onlineIndicatorStyleMap[size]}
         ></span>

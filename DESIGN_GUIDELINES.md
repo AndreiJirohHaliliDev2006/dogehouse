@@ -47,13 +47,13 @@ HTML's `link` method
 
 ```html
 <link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
 ```
 
 CSS/SCSS `@import`
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
 ```
 
 CSS Rules
@@ -62,7 +62,7 @@ CSS Rules
 font-family: 'Inter', sans-serif;
 
 // Regular
-font-weight: 400;
+font-weight: 500;
 
 // Bold
 font-weight: 700;
@@ -86,4 +86,4 @@ This is an approximation. On some circumstances other values will be used to ens
 ![DogeHouse spacing](https://i.imgur.com/gRIJAXA.png)
 
 ## Doubts and questions
-If you have any doubts or concerns when developing components or other UI elements, you can open an issue and tag @ajmnz or leave a message in `#design` or `#kofta` in [our Discord](https://discord.gg/82HzQCJCDg).
+If you have any doubts or concerns when developing components or other UI elements, you can open an issue and tag @ajmnz or leave a message in `#design` or `#kibbeh` in [our Discord](https://discord.gg/82HzQCJCDg).

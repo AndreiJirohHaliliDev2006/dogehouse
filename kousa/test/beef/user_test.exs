@@ -1,9 +1,9 @@
 defmodule Kousa.Beef.UserTest do
   # allow tests to run in parallel
   use ExUnit.Case, async: true
-  use Kousa.Support.EctoSandbox
+  use KousaTest.Support.EctoSandbox
 
-  alias Kousa.Support.Factory
+  alias KousaTest.Support.Factory
   alias Beef.Follows
   alias Beef.Schemas.Room
   alias Beef.Schemas.User
@@ -15,6 +15,7 @@ defmodule Kousa.Beef.UserTest do
     @gh_input %{
       "id" => 12345,
       "avatar_url" => "https://foo.bar/baz.jpg",
+      "banner_url" => "https://foo.bar/baz.jpg",
       "name" => "tester",
       "bio" => "test",
       "github_access_token" => "askldjlqwjldq"
@@ -43,6 +44,13 @@ defmodule Kousa.Beef.UserTest do
     test "by user_id", %{user: user = %{id: id}} do
       assert [^id] = Users.find_by_github_ids([user.githubId])
     end
+
+    test "by searching username", %{user: %{id: id, username: username}} do
+      assert [%{id: ^id}] = Users.search_username("@" <> username)
+      assert [%{id: ^id}] = Users.search_username(username)
+      assert [%{id: ^id}] = Users.search_username(String.slice(username, 0..2))
+      assert [] = Users.search_username("akljdsjoqwdijo12")
+    end
   end
 
   describe "when you edit a user" do
@@ -54,6 +62,49 @@ defmodule Kousa.Beef.UserTest do
                  id,
                  %{username: "tim", displayName: "tim", bio: ""}
                )
+    end
+
+    test "with avatar_url that is from twitter", %{user: %{id: id}} do
+      assert {:ok, user} =
+               Users.edit_profile(id, %{
+                 username: "timmy",
+                 displayName: "tim",
+                 bio: "",
+                 avatarUrl:
+                   "https://pbs.twimg.com/profile_images/1214953675724079106/6Y3XokVC_200x200.jpg"
+               })
+    end
+
+    test "with avatar_url that is from github", %{user: %{id: id}} do
+      assert {:ok, user} =
+               Users.edit_profile(id, %{
+                 username: "timmy",
+                 displayName: "tim",
+                 bio: "",
+                 avatarUrl: "https://avatars.githubusercontent.com/u/35400192?v=4"
+               })
+    end
+
+    test "with avatar_url that is from discord", %{user: %{id: id}} do
+      assert {:ok, user} =
+               Users.edit_profile(id, %{
+                 username: "timmy",
+                 displayName: "tim",
+                 bio: "",
+                 avatarUrl:
+                   "https://cdn.discordapp.com/avatars/473965680857972757/6b3e4b9be1fd453230172ca6509f0b46.webp"
+               })
+    end
+
+    test "with avatar_url that is not from twitter/github/discord", %{user: %{id: id}} do
+      assert {:error, _} =
+               Users.edit_profile(id, %{
+                 username: "timmy",
+                 displayName: "tim",
+                 bio: "",
+                 avatarUrl:
+                   "https://bit.ly/3dzG9DB#https://avatars.githubusercontent.com/u/44095206?v=4"
+               })
     end
 
     test "with empty bio", %{user: %{id: id}} do
@@ -101,9 +152,9 @@ defmodule Kousa.Beef.UserTest do
       Follows.insert(%{userId: user1.id, followerId: user2.id})
       Factory.create(Room, creatorId: user1.id)
       room = Factory.create(Room, creatorId: user2.id)
-      Kousa.Data.RoomBlock.insert(%{roomId: room.id, userId: user1.id, modId: user2.id})
+      Beef.RoomBlocks.insert(%{roomId: room.id, userId: user1.id, modId: user2.id})
       UserBlocks.insert(%{userIdBlocked: user1.id, userId: user2.id})
-      Kousa.Data.RoomPermission.ask_to_speak(user1.id, room.id)
+      Beef.RoomPermissions.ask_to_speak(user1.id, room.id)
       assert {:ok, _} = Users.delete(user1.id)
 
       # probably needs some more tests here.

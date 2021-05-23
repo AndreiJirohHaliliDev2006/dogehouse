@@ -1,6 +1,6 @@
 defmodule KousaTest.AdHocUserTest do
   use ExUnit.Case, async: true
-  use Kousa.Support.EctoSandbox
+  use KousaTest.Support.EctoSandbox
 
   @moduledoc """
   ad-hoc test set to give coverage for all modules
@@ -14,10 +14,10 @@ defmodule KousaTest.AdHocUserTest do
   alias Beef.Schemas.Room
 
   alias Beef.Repo
-  alias Kousa.Support.Factory
+  alias KousaTest.Support.Factory
 
-  describe "Beef.RoomBlock" do
-    alias Beef.RoomBlock
+  describe "Beef.Schemas.RoomBlock" do
+    alias Beef.Schemas.RoomBlock
 
     test "you can add a room blocker into the roomblock table" do
       %{id: uid} = Factory.create(User)
@@ -42,6 +42,6 @@ defmodule KousaTest.AdHocUserTest do
     end
   end
 
-  describe "Kousa.TokenUtils" do
+  describe "Kousa.Utils.TokenUtils" do
   end
 end

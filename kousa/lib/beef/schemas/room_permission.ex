@@ -1,4 +1,4 @@
-defmodule Beef.RoomPermission do
+defmodule Beef.Schemas.RoomPermission do
   use Ecto.Schema
   import Ecto.Changeset
   alias Beef.Schemas.Room
@@ -15,7 +15,7 @@ defmodule Beef.RoomPermission do
 
   alias Beef.Schemas.User
 
-  @derive {Poison.Encoder, only: [:isSpeaker, :isMod, :askedToSpeak]}
+  @derive {Jason.Encoder, only: [:isSpeaker, :isMod, :askedToSpeak]}
   @primary_key false
   schema "room_permissions" do
     belongs_to(:user, User, foreign_key: :userId, type: :binary_id)

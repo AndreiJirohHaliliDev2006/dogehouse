@@ -1,16 +1,16 @@
 defmodule Kousa.Beef.UserBlockTest do
   # allow tests to run in parallel
   use ExUnit.Case, async: true
-  use Kousa.Support.EctoSandbox
+  use KousaTest.Support.EctoSandbox
 
-  alias Kousa.Support.Factory
+  alias KousaTest.Support.Factory
   alias Beef.Schemas.User
   alias Beef.Repo
 
   describe "Beef.Schemas.UserBlock" do
     alias Beef.Schemas.UserBlock
 
-    test "you can add a room into the room table" do
+    test "you can add a user block" do
       %{id: uid} = Factory.create(User)
       %{id: bid} = Factory.create(User)
 

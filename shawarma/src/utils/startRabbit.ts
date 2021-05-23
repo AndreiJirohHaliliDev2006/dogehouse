@@ -1,4 +1,4 @@
-import amqp from "amqplib";
+import amqp, { Connection } from "amqplib";
 import * as Sentry from "@sentry/node";
 import {
   DtlsParameters,
@@ -6,14 +6,15 @@ import {
   RtpCapabilities,
   RtpParameters,
 } from "mediasoup/lib/types";
-import { Platform, VoiceSendDirection } from "src/types";
+import { VoiceSendDirection } from "src/types";
 import { TransportOptions } from "./createTransport";
 import { Consumer } from "./createConsumer";
 
+const retryInterval = 5000;
 export interface HandlerDataMap {
   "remove-speaker": { roomId: string; peerId: string };
   "destroy-room": { roomId: string };
-  "close-peer": { roomId: string; peerId: string };
+  "close-peer": { roomId: string; peerId: string; kicked?: boolean };
   "@get-recv-tracks": {
     roomId: string;
     peerId: string;
@@ -92,17 +93,18 @@ type OutgoingMessageDataMap = {
   } & Consumer;
   you_left_room: {
     roomId: string;
+    kicked: boolean;
   };
   "you-are-now-a-speaker": {
     sendTransportOptions: TransportOptions;
     roomId: string;
-  }
+  };
   "you-joined-as-peer": {
     roomId: string;
     peerId: string;
     routerRtpCapabilities: RtpCapabilities;
     recvTransportOptions: TransportOptions;
-  }
+  };
 } & {
   [Key in SendTrackDoneOperationName]: {
     error?: string;
@@ -119,7 +121,6 @@ type OutgoingMessageDataMap = {
 
 type OutgoingMessage<Key extends keyof OutgoingMessageDataMap> = {
   op: Key;
-  platform: Platform;
   d: OutgoingMessageDataMap[Key];
 } & ({ uid: string } | { rid: string });
 interface IncomingChannelMessageData<Key extends keyof HandlerMap> {
@@ -137,11 +138,20 @@ export const startRabbit = async (handler: HandlerMap) => {
     "trying to connect to: ",
     process.env.RABBITMQ_URL || "amqp://localhost"
   );
-  const conn = await amqp.connect(
-    process.env.RABBITMQ_URL || "amqp://localhost"
-  );
+  let conn: Connection;
+  try {
+    conn = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost");
+  } catch (err) {
+    console.error("Unable to connect to RabbitMQ: ", err);
+    setTimeout(async () => await startRabbit(handler), retryInterval);
+    return;
+  }
   const id = process.env.QUEUE_ID || "";
   console.log("rabbit connected " + id);
+  conn.on("close", async function (err: Error) {
+    console.error("Rabbit connection closed with error: ", err);
+    setTimeout(async () => await startRabbit(handler), retryInterval);
+  });
   const channel = await conn.createChannel();
   const sendQueue = "kousa_queue" + id;
   const onlineQueue = "kousa_online_queue" + id;
@@ -180,7 +190,6 @@ export const startRabbit = async (handler: HandlerMap) => {
                 console.log(operation);
                 send({
                   op: "error",
-                  platform: "vscode",
                   d:
                     "The voice server is probably redeploying, it should reconnect in a few seconds. If not, try refreshing.",
                   uid: uid,
